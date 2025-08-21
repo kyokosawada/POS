@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.kyokosawada.ui.calculateWindowSizeClass
+import com.kyokosawada.ui.utils.calculateWindowSizeClass
 import com.kyokosawada.ui.navigation.AppNavHost
 import com.kyokosawada.ui.theme.AppTheme
 

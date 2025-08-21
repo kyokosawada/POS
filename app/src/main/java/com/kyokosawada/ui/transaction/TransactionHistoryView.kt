@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.transaction
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,19 +10,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 /**
- * Image Picker/Upload modal sheet.
+ * Transaction History screen.
  */
 @Composable
-fun ImagePickerSheet() {
+fun TransactionHistoryView() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text(
-                "Image Picker Sheet Placeholder",
-                style = MaterialTheme.typography.headlineMedium
-            )
+            Text("Transaction History Placeholder", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }

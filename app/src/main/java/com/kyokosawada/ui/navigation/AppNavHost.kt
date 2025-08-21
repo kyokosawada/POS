@@ -23,13 +23,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.kyokosawada.ui.CartView
-import com.kyokosawada.ui.DashboardView
-import com.kyokosawada.ui.ProductListView
-import com.kyokosawada.ui.SettingsView
-import com.kyokosawada.ui.TransactionHistoryView
-import com.kyokosawada.ui.WindowSizeClass
-import com.kyokosawada.ui.WindowWidthSizeClass
+import com.kyokosawada.ui.cart.CartView
+import com.kyokosawada.ui.dashboard.DashboardView
+import com.kyokosawada.ui.product.ProductListView
+import com.kyokosawada.ui.settings.SettingsView
+import com.kyokosawada.ui.transaction.TransactionHistoryView
+import com.kyokosawada.ui.utils.WindowSizeClass
+import com.kyokosawada.ui.utils.WindowWidthSizeClass
 
 /**
  * Type-safe sealed class for defining navigation destinations.

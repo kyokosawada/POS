@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.product
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions

@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.utils
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.Composable

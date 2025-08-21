@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.product
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,7 +13,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Surface
@@ -39,6 +38,7 @@ import org.koin.androidx.compose.koinViewModel
  * Product Inventory List screen. MVVM: State from ProductViewModel via Koin.
  */
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.kyokosawada.ui.product.ProductEditView
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,7 +116,7 @@ fun ProductListView(
                                 onClick = { editProductState.value = product },
                                 onDelete = { productToDeleteState.value = product }
                             )
-                            Divider()
+                            Divider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.cart
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,19 +10,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 /**
- * Barcode Scanner/Camera modal sheet.
+ * CartView screen.
  */
 @Composable
-fun BarcodeScannerSheet() {
+fun CartView() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text(
-                "Barcode Scanner Sheet Placeholder",
-                style = MaterialTheme.typography.headlineMedium
-            )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(text = "Cart Placeholder", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }

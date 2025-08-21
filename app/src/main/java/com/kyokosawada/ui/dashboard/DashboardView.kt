@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.dashboard
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,17 +9,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
+// ... existing code ...
+
 /**
- * Transaction History screen.
+ * Dashboard/Home view.
  */
 @Composable
-fun TransactionHistoryView() {
+fun DashboardView() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text("Transaction History Placeholder", style = MaterialTheme.typography.headlineMedium)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = "Dashboard/Home Placeholder",
+                style = MaterialTheme.typography.headlineMedium
+            )
         }
     }
 }
+// ... existing code ...

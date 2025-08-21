@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.cart
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,13 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-// ... existing code ...
-
 /**
- * Dashboard/Home view.
+ * Checkout/Payment View.
  */
 @Composable
-fun DashboardView() {
+fun CheckoutView() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -24,11 +22,7 @@ fun DashboardView() {
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                text = "Dashboard/Home Placeholder",
-                style = MaterialTheme.typography.headlineMedium
-            )
+            Text("Checkout Placeholder", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }
-// ... existing code ...

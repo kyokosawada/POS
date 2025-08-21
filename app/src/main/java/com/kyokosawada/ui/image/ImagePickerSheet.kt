@@ -1,4 +1,4 @@
-package com.kyokosawada.ui
+package com.kyokosawada.ui.image
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,16 +10,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 /**
- * Receipt PDF Preview.
+ * Image Picker/Upload modal sheet.
  */
 @Composable
-fun ReceiptPreviewView() {
+fun ImagePickerSheet() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text("Receipt Preview Placeholder", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                "Image Picker Sheet Placeholder",
+                style = MaterialTheme.typography.headlineMedium
+            )
         }
     }
 }
