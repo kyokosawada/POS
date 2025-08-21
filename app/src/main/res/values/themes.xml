@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+    Base application theme.
+    This theme is used by the system.
+    -->
+    <style name="Theme.POS" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
