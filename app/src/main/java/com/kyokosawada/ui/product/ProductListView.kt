@@ -34,19 +34,17 @@ import com.kyokosawada.data.product.ProductEntity
 import com.kyokosawada.data.product.ProductDao
 import org.koin.androidx.compose.koinViewModel
 
-import com.kyokosawada.data.product.ProductViewModel
+import com.kyokosawada.ui.product.ProductViewModel
 /**
  * Product Inventory List screen. MVVM: State from ProductViewModel via Koin.
  */
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.kyokosawada.ui.product.ProductEditView
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductListView(
     viewModel: ProductViewModel = koinViewModel(),
-    onAddProduct: () -> Unit = {},
     onProductClick: (ProductEntity) -> Unit = {}
 ) {
     val products = viewModel.products.collectAsState().value

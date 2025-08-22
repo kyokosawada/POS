@@ -6,14 +6,45 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 import com.kyokosawada.data.product.ProductRepository
-import com.kyokosawada.data.product.ProductViewModel
+import com.kyokosawada.data.product.ProductRepositoryImpl
+import com.kyokosawada.ui.product.ProductViewModel
+
+// Cart feature imports
+import com.kyokosawada.data.cart.CartRepository
+import com.kyokosawada.data.cart.CartRepositoryImpl
+import com.kyokosawada.data.cart.usecase.AddToCartUseCase
+import com.kyokosawada.data.cart.usecase.RemoveFromCartUseCase
+import com.kyokosawada.data.cart.usecase.UpdateCartItemQuantityUseCase
+import com.kyokosawada.data.cart.usecase.ClearCartUseCase
+import com.kyokosawada.data.cart.usecase.CheckoutCartUseCase
+import com.kyokosawada.ui.cart.CartViewModel
 
 /**
  * Koin DI module for inventory/data layer.
+ * Uses singletons for data/resources, factories for use cases & ViewModel.
  */
 val dataModule = module {
+    // Database & Product layer
     single { Room.databaseBuilder(get<Application>(), AppDatabase::class.java, "pos-db").build() }
     single { get<AppDatabase>().productDao() }
-    single { ProductRepository(get()) }
+    single<ProductRepository> { ProductRepositoryImpl(get()) }
     factory { ProductViewModel(get()) }
+
+    // Cart features
+    single<CartRepository> { CartRepositoryImpl() }
+    factory { AddToCartUseCase(get()) }
+    factory { RemoveFromCartUseCase(get()) }
+    factory { UpdateCartItemQuantityUseCase(get()) }
+    factory { ClearCartUseCase(get()) }
+    factory { CheckoutCartUseCase(get()) }
+    factory {
+        CartViewModel(
+            get(), // CartRepository
+            get(), // AddToCartUseCase
+            get(), // RemoveFromCartUseCase
+            get(), // UpdateCartItemQuantityUseCase
+            get(), // ClearCartUseCase
+            get()  // CheckoutCartUseCase
+        )
+    }
 }

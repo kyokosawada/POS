@@ -100,7 +100,7 @@ fun AppNavHost(windowSizeClass: WindowSizeClass) {
                 ) {
                     composable(NavDestination.Dashboard.route) { DashboardView() }
                     composable(NavDestination.Products.route) { ProductListView() }
-                    composable(NavDestination.Cart.route) { CartView() }
+                    composable(NavDestination.Cart.route) { CartView(windowSizeClass = windowSizeClass) }
                     composable(NavDestination.Transactions.route) { TransactionHistoryView() }
                     composable(NavDestination.Settings.route) { SettingsView() }
                 }
