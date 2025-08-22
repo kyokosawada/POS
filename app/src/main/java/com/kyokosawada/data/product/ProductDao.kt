@@ -1,6 +1,7 @@
-package com.kyokosawada.data
+package com.kyokosawada.data.product
 
 import androidx.room.*
+import com.kyokosawada.data.product.ProductEntity
 import kotlinx.coroutines.flow.Flow
 
 /**

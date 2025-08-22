@@ -30,10 +30,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kyokosawada.data.ProductEntity
-import com.kyokosawada.data.ProductViewModel
+import com.kyokosawada.data.product.ProductEntity
+import com.kyokosawada.data.product.ProductDao
 import org.koin.androidx.compose.koinViewModel
 
+import com.kyokosawada.data.product.ProductViewModel
 /**
  * Product Inventory List screen. MVVM: State from ProductViewModel via Koin.
  */

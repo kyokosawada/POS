@@ -1,4 +1,4 @@
-package com.kyokosawada.data
+package com.kyokosawada.data.product
 
 import kotlinx.coroutines.flow.Flow
 

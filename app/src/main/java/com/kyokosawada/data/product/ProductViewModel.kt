@@ -1,4 +1,4 @@
-package com.kyokosawada.data
+package com.kyokosawada.data.product
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

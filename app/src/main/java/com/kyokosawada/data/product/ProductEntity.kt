@@ -1,4 +1,4 @@
-package com.kyokosawada.data
+package com.kyokosawada.data.product
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

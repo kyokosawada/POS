@@ -8,7 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.kyokosawada.data.ProductEntity
+import com.kyokosawada.data.product.ProductEntity
 
 /**
  * Product Add/Edit View as reusable composable,
