@@ -27,9 +27,14 @@
         "@modelcontextprotocol/server-memory"
       ]
     }
-
-
-  }
+  },
+  "commands": [
+    {
+      "name": "beast mode",
+      "path": "./beastmode/beastmode.md",
+      "model": "gpt-4.1"
+    }
+  ]
 }
 
 

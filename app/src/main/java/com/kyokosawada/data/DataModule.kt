@@ -19,13 +19,26 @@ import com.kyokosawada.data.cart.usecase.ClearCartUseCase
 import com.kyokosawada.data.cart.usecase.CheckoutCartUseCase
 import com.kyokosawada.ui.cart.CartViewModel
 
+// Transaction feature imports
+import com.kyokosawada.data.transaction.TransactionDao
+import com.kyokosawada.data.transaction.TransactionRepository
+import com.kyokosawada.data.transaction.TransactionRepositoryImpl
+import com.kyokosawada.data.transaction.usecase.CreateTransactionUseCase
+import com.kyokosawada.data.transaction.usecase.GetTransactionsUseCase
+import com.kyokosawada.data.transaction.usecase.GetTransactionByIdUseCase
+import com.kyokosawada.ui.transaction.TransactionHistoryViewModel
+
 /**
  * Koin DI module for inventory/data layer.
  * Uses singletons for data/resources, factories for use cases & ViewModel.
  */
 val dataModule = module {
     // Database & Product layer
-    single { Room.databaseBuilder(get<Application>(), AppDatabase::class.java, "pos-db").build() }
+    single {
+        Room.databaseBuilder(get<Application>(), AppDatabase::class.java, "pos-db")
+            .fallbackToDestructiveMigration()
+            .build()
+    }
     single { get<AppDatabase>().productDao() }
     single<ProductRepository> { ProductRepositoryImpl(get()) }
     factory { ProductViewModel(get()) }
@@ -44,7 +57,17 @@ val dataModule = module {
             get(), // RemoveFromCartUseCase
             get(), // UpdateCartItemQuantityUseCase
             get(), // ClearCartUseCase
-            get()  // CheckoutCartUseCase
+            get(), // CheckoutCartUseCase
+            get(), // CreateTransactionUseCase
+            get()  // ProductRepository for stock updates
         )
     }
+
+    // Transaction features
+    single { get<AppDatabase>().transactionDao() }
+    single<TransactionRepository> { TransactionRepositoryImpl(get()) }
+    factory { CreateTransactionUseCase(get()) }
+    factory { GetTransactionsUseCase(get()) }
+    factory { GetTransactionByIdUseCase(get()) }
+    factory { TransactionHistoryViewModel(get(), get()) }
 }

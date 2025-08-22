@@ -39,9 +39,16 @@ Needs fast product lookup/scan and checkout for customers
 
 ### 4.2 Sales Flow
 
-- Cart: add/remove/update products, quantity
-- Fast checkout (choose payment type for demo)
-- Auto stock decrement
+- Cart: add/remove/update products, quantity (cannot exceed in-stock)
+- Cart "+" button disabled when quantity == available stock, with snackbar feedback shown if at
+  limit
+- On checkout, payment type selection (cash, credit, GCash, etc.) required
+- SALE GUARD: On checkout, app double-checks all cart items vs latest inventory before transaction
+  is finalized; checkout aborts (with error/suggestion) if any product has insufficient stock (
+  prevents oversell from race conditions)
+- Auto stock decrement on transaction completion, syncing real-time to all other UI and sales
+  features
+- Cart clears after completed checkout
 
 ### 4.3 Receipt Sharing
 
@@ -51,7 +58,9 @@ Needs fast product lookup/scan and checkout for customers
 ### 4.4 Transaction History
 
 - List, filter, and view past sales
-- PDF receipt preview/download
+- Tap a transaction to view modern receipt (with payment type, all items, totals, time)
+- PDF receipt preview/download (PDF export is designed as next phase; currently, full composable
+  preview+sharing is live)
 
 ### 4.5 Basic Analytics
 

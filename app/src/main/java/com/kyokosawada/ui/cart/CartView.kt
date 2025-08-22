@@ -25,6 +25,7 @@ import com.kyokosawada.ui.product.ProductViewModel
 import com.kyokosawada.data.product.ProductEntity
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.MutableState
 
 /**
  * Material3 Cart screen - fully Compose. Observes ViewModel's StateFlow for cart display+edit.
@@ -40,6 +41,8 @@ fun CartView(
     val products by productViewModel.products.collectAsState()
     val total = cartItems.sumOf  { it.subtotal }
     val showDialog = remember { mutableStateOf(false) }
+    val showPaymentTypeDialog = remember { mutableStateOf(false) }
+    val paymentType = remember { mutableStateOf("cash") }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val adaptiveValues = windowSizeClass.getAdaptiveValues()
@@ -71,7 +74,7 @@ fun CartView(
                 )
                 Spacer(Modifier.width(adaptiveValues.horizontalPadding / 2))
                 Button(
-                    onClick = { viewModel.checkout() },
+                    onClick = { showPaymentTypeDialog.value = true },
                     enabled = cartItems.isNotEmpty()
                 ) { Text("Checkout") }
             }
@@ -106,11 +109,16 @@ fun CartView(
                         CartItemRow(
                             item = item,
                             onRemove = { viewModel.removeItem(item.productId) },
-                            onQuantityChange = {
-                                viewModel.updateItemQuantity(item.productId, it)
-                            },
-                            windowSizeClass = windowSizeClass
+                            onQuantityChange = { viewModel.updateItemQuantity(item.productId, it) },
+                            windowSizeClass = windowSizeClass,
+                            products = products,
+                            showStockLimitFeedback = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Cannot add: exceeds stock quantity available!")
+                                }
+                            }
                         )
+
                     }
                 }
             }
@@ -152,6 +160,21 @@ fun CartView(
                 },
                 onDismiss = { showDialog.value = false },
                 windowSizeClass = windowSizeClass
+            )
+        }
+        if (showPaymentTypeDialog.value) {
+            PaymentTypeDialog(
+                onConfirm = {
+                    viewModel.checkout(paymentType.value) { errMsg ->
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(errMsg)
+                        }
+                    }
+                    showPaymentTypeDialog.value = false
+                },
+                onSelect = { paymentType.value = it },
+                onDismiss = { showPaymentTypeDialog.value = false },
+                selectedType = paymentType.value
             )
         }
     }
@@ -204,13 +227,52 @@ private fun AddProductDialog(
 }
 
 @Composable
+private fun PaymentTypeDialog(
+    onConfirm: () -> Unit,
+    onSelect: (String) -> Unit,
+    onDismiss: () -> Unit,
+    selectedType: String
+) {
+    val types = listOf("cash", "credit", "GCash", "Bank Transfer")
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select Payment Type") },
+        text = {
+            Column {
+                types.forEach { type ->
+                    val selected = (type == selectedType)
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(type) }
+                            .padding(8.dp)
+                    ) {
+                        RadioButton(selected = selected, onClick = { onSelect(type) })
+                        Text(type, Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text("Checkout") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
 private fun CartItemRow(
     item: CartItem,
     onRemove: () -> Unit,
     onQuantityChange: (Int) -> Unit,
-    windowSizeClass: WindowSizeClass
+    windowSizeClass: WindowSizeClass,
+    products: List<ProductEntity> = emptyList(), // inject products for stock lookup
+    showStockLimitFeedback: (() -> Unit)? = null // callback to message user
 ) {
     val adaptiveValues = windowSizeClass.getAdaptiveValues()
+    val productStock = products.find { it.id == item.productId }?.stockQty ?: Int.MAX_VALUE
     Row(
         Modifier
             .fillMaxWidth()
@@ -235,6 +297,12 @@ private fun CartItemRow(
             "${item.quantity}",
             Modifier.padding(horizontal = adaptiveValues.horizontalPadding / 2)
         )
-        OutlinedButton(onClick = { onQuantityChange(item.quantity + 1) }) { Text("+") }
+        OutlinedButton(
+            onClick = {
+                if (item.quantity < productStock) onQuantityChange(item.quantity + 1)
+                else showStockLimitFeedback?.invoke()
+            },
+            enabled = item.quantity < productStock
+        ) { Text("+") }
     }
 }

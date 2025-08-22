@@ -15,14 +15,18 @@ testable, and maintainable.
 ### Core Functionality:
 
 - **Add to Cart**: Users can add products to the cart via a dialog that lists available inventory.
-- **Update Quantity**: Users can increment or decrement the quantity of items directly in the cart.
+- **Update Quantity**: Users can increment or decrement the quantity of items directly in the cart,
+  but **never above inventory/stock**; attempting to do so triggers a snackbar feedback message ("
+  Cannot add: exceeds stock quantity available!").
 - **Remove Item**: Users can remove individual items from the cart.
 - **Clear Cart**: A dedicated button allows for clearing all items from the cart at once.
 - **Live Total**: The total price is calculated and displayed in real-time as the cart is modified.
-- **Stock Validation**: The UI prevents adding products that are out of stock and provides visual
-  feedback.
+- **Stock Validation (UI+Backend)**: The UI disables the + button at in-stock limit and provides
+  real-time visual feedback. At checkout, a final validation checks current inventory for all items,
+  aborting and informing the user if any item overshoots true stock. **Oversell is strictly
+  impossible.**
 - **Checkout Trigger**: A checkout button initiates the next step in the sales flow (currently a
-  placeholder action).
+  placeholder action, but productionized flow validates inventory and processes payment type).
 - **Responsive UI**: The layout adapts to different screen sizes using `WindowSizeClass`.
 
 ---

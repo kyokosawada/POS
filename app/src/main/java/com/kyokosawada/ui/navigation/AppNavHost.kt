@@ -23,11 +23,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.kyokosawada.ui.cart.CartView
 import com.kyokosawada.ui.dashboard.DashboardView
 import com.kyokosawada.ui.product.ProductListView
 import com.kyokosawada.ui.settings.SettingsView
 import com.kyokosawada.ui.transaction.TransactionHistoryView
+import com.kyokosawada.ui.transaction.ReceiptPreviewView
 import com.kyokosawada.ui.utils.WindowSizeClass
 import com.kyokosawada.ui.utils.WindowWidthSizeClass
 
@@ -40,6 +43,9 @@ sealed class NavDestination(val route: String, val label: String, val icon: Imag
     object Cart : NavDestination("cart", "Cart", Icons.Filled.ShoppingCart)
     object Transactions : NavDestination("transactions", "Receipts", Icons.Filled.List)
     object Settings : NavDestination("settings", "Settings", Icons.Filled.Settings)
+    object ReceiptDetail : NavDestination("receipt/{transactionId}", "Receipt", Icons.Filled.List) {
+        fun createRoute(transactionId: Long) = "receipt/$transactionId"
+    }
 }
 
 val navItems = listOf(
@@ -101,8 +107,21 @@ fun AppNavHost(windowSizeClass: WindowSizeClass) {
                     composable(NavDestination.Dashboard.route) { DashboardView() }
                     composable(NavDestination.Products.route) { ProductListView() }
                     composable(NavDestination.Cart.route) { CartView(windowSizeClass = windowSizeClass) }
-                    composable(NavDestination.Transactions.route) { TransactionHistoryView() }
+                    composable(NavDestination.Transactions.route) {
+                        TransactionHistoryView(
+                            navController
+                        )
+                    }
                     composable(NavDestination.Settings.route) { SettingsView() }
+                    composable(
+                        route = NavDestination.ReceiptDetail.route,
+                        arguments = listOf(
+                            navArgument("transactionId") { type = NavType.LongType }
+                        )
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getLong("transactionId") ?: -1L
+                        ReceiptPreviewView(transactionId = id)
+                    }
                 }
             }
         }
