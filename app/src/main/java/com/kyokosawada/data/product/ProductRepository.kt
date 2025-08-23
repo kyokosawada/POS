@@ -16,4 +16,21 @@ interface ProductRepository {
     suspend fun updateProduct(product: ProductEntity)
     suspend fun deleteProduct(product: ProductEntity)
     suspend fun getProductById(id: Long): ProductEntity?
+
+    // Dashboard Analytics Methods
+
+    /**
+     * Get count of products with low stock.
+     */
+    suspend fun getLowStockCount(threshold: Int = 5): Int
+
+    /**
+     * Get products with low stock for alerts.
+     */
+    fun getLowStockProducts(threshold: Int = 5): Flow<List<ProductEntity>>
+
+    /**
+     * Get count of products with low stock as Flow for real-time updates.
+     */
+    fun getLowStockCountFlow(threshold: Int = 5): Flow<Int>
 }

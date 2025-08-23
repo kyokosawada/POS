@@ -106,6 +106,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Charts (Vico)
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
+
     // KOIN Dependency Injection (Compose, ViewModel, Navigation)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)

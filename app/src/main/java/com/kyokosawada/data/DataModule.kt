@@ -28,6 +28,9 @@ import com.kyokosawada.data.transaction.usecase.GetTransactionsUseCase
 import com.kyokosawada.data.transaction.usecase.GetTransactionByIdUseCase
 import com.kyokosawada.ui.transaction.TransactionHistoryViewModel
 
+// Dashboard feature imports
+import com.kyokosawada.ui.dashboard.DashboardViewModel
+
 /**
  * Koin DI module for inventory/data layer.
  * Uses singletons for data/resources, factories for use cases & ViewModel.
@@ -70,4 +73,7 @@ val dataModule = module {
     factory { GetTransactionsUseCase(get()) }
     factory { GetTransactionByIdUseCase(get()) }
     factory { TransactionHistoryViewModel(get(), get()) }
+
+    // Dashboard features
+    factory { DashboardViewModel(get(), get()) } // TransactionRepository, ProductRepository
 }

@@ -1,6 +1,6 @@
 [versions]
 # Core Framework
-kotlin = "2.2.10"
+kotlin = "2.2.0"
 agp = "8.11.1"
 compose-bom = "2025.08.00"
 core-ktx = "1.17.0"
@@ -108,9 +108,8 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 
 # Charts
-vico-compose = { module = "com.patrykandpatryk.vico:compose", version.ref = "vico" }
-vico-compose-m3 = { module = "com.patrykandpatryk.vico:compose-m3", version.ref = "vico" }
-vico-core = { module = "com.patrykandpatryk.vico:core", version.ref = "vico" }
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
+vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 
 # File I/O & Export
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
@@ -191,7 +190,6 @@ camera = [
 vico = [
     "vico-compose",
     "vico-compose-m3",
-    "vico-core"
 ]
 
 # Coroutines Bundle

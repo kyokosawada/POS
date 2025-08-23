@@ -104,7 +104,7 @@ fun AppNavHost(windowSizeClass: WindowSizeClass) {
                         .padding(innerPadding)
                         .fillMaxSize()
                 ) {
-                    composable(NavDestination.Dashboard.route) { DashboardView() }
+                    composable(NavDestination.Dashboard.route) { DashboardView(windowSizeClass) }
                     composable(NavDestination.Products.route) { ProductListView() }
                     composable(NavDestination.Cart.route) { CartView(windowSizeClass = windowSizeClass) }
                     composable(NavDestination.Transactions.route) {
