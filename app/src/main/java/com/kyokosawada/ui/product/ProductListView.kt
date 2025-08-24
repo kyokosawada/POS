@@ -1,5 +1,6 @@
 package com.kyokosawada.ui.product
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -38,143 +39,219 @@ import com.kyokosawada.ui.product.ProductViewModel
 /**
  * Product Inventory List screen. MVVM: State from ProductViewModel via Koin.
  */
+
+// --- Window size adaptivity ---
+import com.kyokosawada.ui.utils.calculateWindowSizeClass
+import com.kyokosawada.ui.utils.getAdaptiveValues
+import com.kyokosawada.ui.utils.WindowWidthSizeClass
+import com.kyokosawada.ui.utils.AdaptiveValues
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
+
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductListView(
     viewModel: ProductViewModel = koinViewModel(),
     onProductClick: (ProductEntity) -> Unit = {}
 ) {
+    val windowSizeClass = calculateWindowSizeClass()
+    val adaptiveValues = windowSizeClass.getAdaptiveValues()
+
     val products = viewModel.products.collectAsState().value
     val loading = viewModel.loading.collectAsState().value
     val error = viewModel.error.collectAsState().value
     val showAddSheetState = rememberSaveable { mutableStateOf(false) }
     val showAddSheet = showAddSheetState.value
-    val bottomSheetState = rememberModalBottomSheetState()
     val editProductState = rememberSaveable { mutableStateOf<ProductEntity?>(null) }
     val showEditSheet = editProductState.value != null
-
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val productToDeleteState = rememberSaveable { mutableStateOf<ProductEntity?>(null) }
     val productToDelete = productToDeleteState.value
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Text("Products")
-                    }
-                },
-                windowInsets = WindowInsets(0)
-            )
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddSheetState.value = true }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add Product")
             }
         }
-    ) { paddingValues ->
+    ) {
         Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+                .fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            when {
-                loading -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-
-                error != null -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = error, color = MaterialTheme.colorScheme.error)
-                }
-
-                products.isEmpty() -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "No products found.", style = MaterialTheme.typography.bodyLarge)
-                }
-
-                else -> Column(modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(modifier = Modifier.weight(1f)) {
-                        items(products, key = { it.id }) { product ->
-                            ProductListItem(
-                                product = product,
-                                onClick = { editProductState.value = product },
-                                onDelete = { productToDeleteState.value = product }
-                            )
-                            Divider(modifier = Modifier.padding(horizontal = 16.dp))
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (productToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { productToDeleteState.value = null },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteProduct(productToDelete!!)
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("Product deleted")
-                    }
-                    productToDeleteState.value = null
-                }) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { productToDeleteState.value = null }) { Text("Cancel") }
-            },
-            title = { Text("Delete Product") },
-            text = {
-                Text(
-                    "Are you sure you want to delete \"${productToDelete?.name ?: ""}\"?"
+            Column(modifier = Modifier.fillMaxSize()) {
+                ProductHeader()
+                ProductContent(
+                    products = products,
+                    loading = loading,
+                    error = error,
+                    windowSizeClass = windowSizeClass.widthSizeClass,
+                    adaptiveValues = adaptiveValues,
+                    onEdit = { editProductState.value = it },
+                    onDelete = { productToDeleteState.value = it },
+                    modifier = Modifier.fillMaxSize()
                 )
             }
-        )
-    }
-
-    if (showAddSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showAddSheetState.value = false },
-            sheetState = bottomSheetState
-        ) {
-            ProductEditView(
+            ProductDeleteDialog(
+                productToDelete = productToDelete,
+                onDismiss = { productToDeleteState.value = null },
+                onDelete = {
+                    viewModel.deleteProduct(productToDelete!!)
+                    coroutineScope.launch { snackbarHostState.showSnackbar("Product deleted") }
+                    productToDeleteState.value = null
+                }
+            )
+            ProductAddEditSheet(
+                showSheet = showAddSheet,
+                onDismiss = { showAddSheetState.value = false },
                 onSave = {
                     viewModel.addProduct(it)
                     showAddSheetState.value = false
-                },
-                onCancel = { showAddSheetState.value = false }
+                }
             )
-        }
-    }
-    if (showEditSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { editProductState.value = null },
-            sheetState = bottomSheetState
-        ) {
-            ProductEditView(
+            ProductAddEditSheet(
+                showSheet = showEditSheet,
+                onDismiss = { editProductState.value = null },
                 initial = editProductState.value,
                 onSave = {
                     viewModel.updateProduct(it)
                     editProductState.value = null
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProductHeader() {
+    Text(
+        text = "Products",
+        style = MaterialTheme.typography.headlineLarge,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun ProductContent(
+    products: List<ProductEntity>,
+    loading: Boolean,
+    error: String?,
+    windowSizeClass: WindowWidthSizeClass,
+    adaptiveValues: AdaptiveValues,
+    onEdit: (ProductEntity) -> Unit,
+    onDelete: (ProductEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    when {
+        loading -> Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) { CircularProgressIndicator() }
+
+        error != null -> Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) { Text(text = error, color = MaterialTheme.colorScheme.error) }
+
+        products.isEmpty() -> Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) { Text(text = "No products found.", style = MaterialTheme.typography.bodyLarge) }
+
+        else -> if (windowSizeClass == WindowWidthSizeClass.Expanded) {
+            // Grid for expanded
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = adaptiveValues.cardMaxWidth),
+                modifier = modifier
+            ) {
+                items(products, key = { it.id }) { product ->
+                    ProductListItem(
+                        product = product,
+                        onClick = { onEdit(product) },
+                        onDelete = { onDelete(product) },
+                        cardMaxWidth = adaptiveValues.cardMaxWidth,
+                        cardPadding = adaptiveValues.cardPadding
+                    )
+                    Divider(
+                        modifier = Modifier.padding(
+                            horizontal = adaptiveValues.horizontalPadding,
+                            vertical = adaptiveValues.dividerSpacing
+                        )
+                    )
+                }
+            }
+        } else {
+            // List for compact
+            LazyColumn(modifier = modifier.fillMaxSize()) {
+                items(products, key = { it.id }) { product ->
+                    ProductListItem(
+                        product = product,
+                        onClick = { onEdit(product) },
+                        onDelete = { onDelete(product) },
+                        cardMaxWidth = adaptiveValues.cardMaxWidth,
+                        cardPadding = adaptiveValues.cardPadding
+                    )
+                    Divider(
+                        modifier = Modifier.padding(
+                            horizontal = adaptiveValues.horizontalPadding,
+                            vertical = adaptiveValues.dividerSpacing
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProductDeleteDialog(
+    productToDelete: ProductEntity?,
+    onDismiss: () -> Unit,
+    onDelete: () -> Unit
+) {
+    if (productToDelete != null) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            confirmButton = {
+                TextButton(onClick = onDelete) { Text("Delete") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+            title = { Text("Delete Product") },
+            text = { Text("Are you sure you want to delete \"${productToDelete.name}\"?") }
+        )
+    }
+}
+
+@Composable
+private fun ProductAddEditSheet(
+    showSheet: Boolean,
+    onDismiss: () -> Unit,
+    initial: ProductEntity? = null,
+    onSave: (ProductEntity) -> Unit
+) {
+    val bottomSheetState = rememberModalBottomSheetState()
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            sheetState = bottomSheetState
+        ) {
+            ProductEditView(
+                initial = initial,
+                onSave = {
+                    onSave(it)
+                    onDismiss()
                 },
-                onCancel = { editProductState.value = null }
+                onCancel = onDismiss
             )
         }
     }
@@ -184,42 +261,74 @@ fun ProductListView(
 fun ProductListItem(
     product: ProductEntity,
     onClick: () -> Unit = {},
-    onDelete: () -> Unit = {}
+    onDelete: () -> Unit = {},
+    cardMaxWidth: androidx.compose.ui.unit.Dp = androidx.compose.ui.unit.Dp.Infinity,
+    cardPadding: androidx.compose.ui.unit.Dp = 16.dp
 ) {
     val menuExpandedState = remember { mutableStateOf(false) }
-    Row(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .then(if (cardMaxWidth != androidx.compose.ui.unit.Dp.Infinity) Modifier.widthIn(max = cardMaxWidth) else Modifier)
+            .padding(horizontal = cardPadding, vertical = 8.dp)
             .clickable { onClick() },
-        verticalAlignment = Alignment.CenterVertically
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = product.name, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "₱" + String.format("%.2f", product.price),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(text = "Stock: ${product.stockQty}", style = MaterialTheme.typography.bodySmall)
-            if (!product.sku.isNullOrBlank()) Text("SKU: ${product.sku}", style = MaterialTheme.typography.labelSmall)
-        }
-        Box {
-            IconButton(onClick = { menuExpandedState.value = true }) {
-                Icon(Icons.Filled.MoreVert, contentDescription = "More options")
-            }
-            DropdownMenu(
-                expanded = menuExpandedState.value,
-                onDismissRequest = { menuExpandedState.value = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Delete") },
-                    onClick = {
-                        menuExpandedState.value = false
-                        onDelete()
-                    },
-                    leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete") }
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Text(
+                    text = "\u20b1" + String.format("%.2f", product.price),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Stock: ${product.stockQty}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (!product.sku.isNullOrBlank()) Text(
+                    text = "SKU: ${product.sku}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+            Box {
+                IconButton(onClick = { menuExpandedState.value = true }) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        contentDescription = "More options",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                DropdownMenu(
+                    expanded = menuExpandedState.value,
+                    onDismissRequest = { menuExpandedState.value = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = {
+                            menuExpandedState.value = false
+                            onDelete()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    )
+                }
             }
         }
     }

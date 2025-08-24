@@ -133,11 +133,28 @@ class DashboardViewModel(
     }
 
     /**
-     * Get formatted labels for daily sales chart.
+     * Chart Y-series data (sales amounts) for Vico chart. Pre-processed to fit MVVM best practice.
      */
-    fun getDailySalesLabels(): List<String> {
-        return dailySales.value.map { formatDate(it.date) }
-    }
+    val salesChartSeries: StateFlow<List<Double>> = dailySales.map { salesList ->
+        salesList.map { it.sales }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    /**
+     * Chart X-labels (dates) for Vico chart. Pre-processed to fit MVVM best practice.
+     */
+    val salesChartLabels: StateFlow<List<String>> = dailySales.map { salesList ->
+        salesList.map {
+            formatDate(it.date)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     /**
      * Get formatted labels for top products chart.

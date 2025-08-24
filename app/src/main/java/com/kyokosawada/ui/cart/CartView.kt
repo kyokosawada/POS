@@ -147,7 +147,7 @@ fun CartView(
                         }
                     } else {
                         viewModel.addItem(
-                            com.kyokosawada.data.cart.CartItem(
+                            CartItem(
                                 productId = product.id,
                                 name = product.name,
                                 price = product.price,

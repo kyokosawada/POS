@@ -35,6 +35,12 @@ import com.kyokosawada.ui.dashboard.DashboardViewModel
  * Koin DI module for inventory/data layer.
  * Uses singletons for data/resources, factories for use cases & ViewModel.
  */
+
+// Settings feature imports
+import com.kyokosawada.data.settings.SettingsRepository
+import com.kyokosawada.data.settings.SettingsRepositoryImpl
+import com.kyokosawada.ui.settings.SettingsViewModel
+
 val dataModule = module {
     // Database & Product layer
     single {
@@ -76,4 +82,12 @@ val dataModule = module {
 
     // Dashboard features
     factory { DashboardViewModel(get(), get()) } // TransactionRepository, ProductRepository
+
+    // Settings features
+    single<SettingsRepository> {
+        SettingsRepositoryImpl(
+            get()
+        )
+    }
+    factory { SettingsViewModel(get()) }
 }

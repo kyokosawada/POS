@@ -31,8 +31,12 @@ fun ProductEditView(
     var error by remember { mutableStateOf<String?>(null) }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = MaterialTheme.shapes.large,
+        tonalElevation = 3.dp
     ) {
         Column(
             modifier = Modifier

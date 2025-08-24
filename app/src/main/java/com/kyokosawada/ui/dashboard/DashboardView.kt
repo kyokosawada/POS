@@ -62,7 +62,8 @@ fun DashboardView(
     val dashboardSummary by viewModel.dashboardSummary.collectAsStateWithLifecycle()
     val salesByPaymentType by viewModel.salesByPaymentType.collectAsStateWithLifecycle()
     val topProducts by viewModel.topProducts.collectAsStateWithLifecycle()
-    val dailySales by viewModel.dailySales.collectAsStateWithLifecycle()
+    val salesChartSeries by viewModel.salesChartSeries.collectAsStateWithLifecycle()
+    val salesChartLabels by viewModel.salesChartLabels.collectAsStateWithLifecycle()
     val lowStockProducts by viewModel.lowStockProducts.collectAsStateWithLifecycle()
 
     // Get device-responsive padding from utils
@@ -95,7 +96,8 @@ fun DashboardView(
         if (selectedDateRange != DateRange.TODAY) {
             item {
                 SalesTrendLineChart(
-                    dailySales = dailySales,
+                    salesSeries = salesChartSeries,
+                    salesLabels = salesChartLabels,
                     chartHeight = getDashboardChartHeight(windowSizeClass)
                 )
             }
@@ -142,7 +144,7 @@ private fun DashboardHeader(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             items(DateRange.values()) { range ->
                 FilterChip(
@@ -248,34 +250,52 @@ private fun SummaryCard(
  * Sales trend line chart visualizing daily POS sales data in real time.
  * Renders short date labels on X-axis and shows empty state if data absent.
  *
+ * Defensive implementation for Vico (2024+): never reference AxisItemPlacer (not present),
+ * never attempt to render chart for <2 points, and always provide a non-blank, non-null
+ * string label for valueFormatter.
+ *
  * @param modifier Modifier for chart card.
- * @param dailySales List of DailySalesResult to plot.
+ * @param salesSeries List<Double>, must have at least 2 entries to show chart.
+ * @param salesLabels List<String>, X-axis short labels, must match salesSeries.size.
+ * @param chartHeight Dp, responsive chart height.
  */
-// Defensive: Only render the chart UI if dailySales is not empty. Axis label formatting
-// will strictly check for valid integer/floating values within bounds. This is
-// maximally robust against empty or partial data, date range switches, and will
-// never attempt to access any data if empty.
 @Composable
 private fun SalesTrendLineChart(
     modifier: Modifier = Modifier,
-    dailySales: List<DailySalesResult> = emptyList(),
+    salesSeries: List<Double> = emptyList(),
+    salesLabels: List<String> = emptyList(),
     chartHeight: Dp // Responsive chart height from DashboardView
 ) {
-    val modelProducer = remember { CartesianChartModelProducer() }
+    // Defensive: Do NOT attempt to render chart or axes unless truly enough for a trend
+    if (salesSeries.size < 2) {
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(chartHeight)
+        ) {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (salesSeries.isEmpty()) "No sales data available" else "Need at least 2 data points to show trend", 
+                    style = MaterialTheme.typography.bodyMedium, 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        return
+    }
 
-    // Model update: Only emit series if dailySales is not empty. Fully clear otherwise.
-    LaunchedEffect(dailySales) {
+    // At least 2 points; proceed to render chart.
+    val modelProducer = remember { CartesianChartModelProducer() }
+    LaunchedEffect(salesSeries) {
         modelProducer.runTransaction {
-            if (dailySales.isNotEmpty()) {
-                lineSeries {
-                    series(
-                        x = dailySales.indices.toList(),
-                        y = dailySales.map { it.sales }
-                    )
-                }
-            } else {
-                // Clear all series to fully reset the chart
-                lineSeries { }
+            lineSeries {
+                series(
+                    x = salesSeries.indices.toList(),
+                    y = salesSeries
+                )
             }
         }
     }
@@ -283,12 +303,12 @@ private fun SalesTrendLineChart(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(chartHeight) // Use responsive computed height
+            .height(chartHeight)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp) // TODO: make this adaptive with windowSizeClass if desired
+                .padding(16.dp)
         ) {
             Text(
                 text = "Sales Trend",
@@ -296,55 +316,28 @@ private fun SalesTrendLineChart(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            // Fully defensive: Do NOT render chart or axes unless dailySales is non-empty
-            if (dailySales.isNotEmpty()) {
-                CartesianChartHost(
-                    chart = rememberCartesianChart(
-                        rememberLineCartesianLayer(),
-                        startAxis = VerticalAxis.rememberStart(),
-                        bottomAxis = HorizontalAxis.rememberBottom(
-                            valueFormatter = { _, value, _ ->
-                                // Only display label if value is an integer and in bounds
-                                // Float/double to int conversion check: value.toInt().toDouble() == value is a linter-safe integral test
-                                val idx = value.toInt()
-                                if (
-                                    dailySales.isNotEmpty() &&
-                                    idx >= 0 &&
-                                    idx < dailySales.size &&
-                                    value.toInt()
-                                        .toDouble() == value // true for integral axis tick only
-                                ) {
-                                    try {
-                                        val formatter = java.text.SimpleDateFormat(
-                                            "MMM d",
-                                            java.util.Locale.getDefault()
-                                        )
-                                        formatter.format(java.util.Date(dailySales[idx].date))
-                                    } catch (_: Exception) {
-                                        ""
-                                    }
-                                } else {
-                                    ""
-                                }
-                            }
-                        ),
+            // DO NOT attempt to specify itemPlacer; rely on default Vico axis tick/label stepping.
+            // Defensive: Always provide a non-null, non-empty label string for every tick Vico asks.
+            CartesianChartHost(
+                chart = rememberCartesianChart(
+                    rememberLineCartesianLayer(),
+                    startAxis = VerticalAxis.rememberStart(),
+                    bottomAxis = HorizontalAxis.rememberBottom(
+                        valueFormatter = { _, value, _ ->
+                            val idx = value.toInt()
+                            if (
+                                idx >= 0 &&
+                                idx < salesLabels.size &&
+                                value.toInt().toDouble() == value
+                            ) {
+                                salesLabels[idx]
+                            } else "?" // fallback; never empty/blank/null
+                        }
                     ),
-                    modelProducer = modelProducer,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                // Highly visible empty state, never attempts chart axis/host render
-                Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No sales data available",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+                ),
+                modelProducer = modelProducer,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
